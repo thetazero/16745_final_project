@@ -1,5 +1,6 @@
 using SatellitePlayground
 using LinearAlgebra
+using SatelliteDynamics
 SP = SatellitePlayground
 
 function hat(ω)
@@ -7,7 +8,7 @@ function hat(ω)
     ω̂ = [0 -ω[3] ω[2]
         ω[3] 0 -ω[1]
         -ω[2] ω[1] 0]
-    
+
     return ω̂
 end
 
@@ -30,8 +31,8 @@ end
 
 function rk4(p::attitude_params, x, u, t, dt, derivative)
     k₁ = dt * derivative(p, x, u, t)
-    k₂ = dt * derivative(p, x + k₁ * 0.5, u, t + dt * 0.5)
-    k₃ = dt * derivative(p, x + k₂ * 0.5, u, t + dt * 0.5)
+    k₂ = dt * derivative(p, x + k₁ / 2, u, t + dt * 0.5)
+    k₃ = dt * derivative(p, x + k₂ / 2, u, t + dt * 0.5)
     k₄ = dt * derivative(p, x + k₃, u, t + dt)
 
     x⁺ = x + (1 / 6) * (k₁ + 2 * k₂ + 2 * k₃ + k₄)
