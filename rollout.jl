@@ -19,11 +19,11 @@ function generate_jacobians(states, times, J)
         time = Epoch(2020, 11, 30) + times[i]
         push!(A,
             ForwardDiff.jacobian(
-                (x) -> nominal_attitude_dynamics(x, states[i], J, time, u_reff),
+                (x) -> nominal_attitude_dynamics(x, states[i].position, J, time, u_reff),
             x_reff))
         push!(B,
             ForwardDiff.jacobian(
-                (u) -> nominal_attitude_dynamics(x_reff, states[i], J, time, u),
+                (u) -> nominal_attitude_dynamics(x_reff, states[i].position, J, time, u),
                 u_reff)
         )
     end
