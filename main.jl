@@ -32,5 +32,17 @@ plot(time, data, title="Attitude", xlabel="Time (s)", ylabel="Quaternion Units (
 J = SP.default_parameters.J
 x0 = SP.initialize_orbit()
 
-@time As, Bs = generate_jacobians(x0, 100, 0.1, J)
-
+steps = 100
+dt = 0.1
+(states, times) = rollout(x0, steps, dt)
+ref_traj = [
+    SP.RBState(
+        attitude=x0.attitude,
+        angular_velocity=x0.angular_velocity,
+        position=state.position,
+        velocity=state.velocity
+    )
+    for state in states
+    
+]
+@time As, Bs = generate_jacobians(ref_traj, times, J)

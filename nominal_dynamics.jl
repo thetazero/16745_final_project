@@ -1,4 +1,6 @@
 using SatellitePlayground
+SP = SatellitePlayground
+
 """
 Returns the dynamics at a certain position, time
 """
@@ -8,6 +10,6 @@ function nominal_attitude_dynamics(x, state, J, time, control)
     u = cross(control, ᵇmagnetic)
     return [
         J \ (u - cross(ω, J * ω))
-        qdot(q, ω)
+        SP.qdot(q, ω)
     ]
 end
