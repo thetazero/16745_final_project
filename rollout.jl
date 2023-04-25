@@ -13,7 +13,7 @@ function rollout(state, steps, dt)
         initial_condition=state)
 end
 
-function generate_jacobians(states, times, J)
+function generate_jacobians(states, times, J, dt)
     A = []
     B = []
     for i in eachindex(states)
@@ -23,11 +23,11 @@ function generate_jacobians(states, times, J)
         p = attitude_params(states[i].position, J)
         push!(A,
             ForwardDiff.jacobian(
-                (x) -> rk4(p, x, u_reff, time, 0.5, nominal_attitude_dynamics),
+                (x) -> rk4(p, x, u_reff, time, dt, nominal_attitude_dynamics),
                 x_reff))
         push!(B,
             ForwardDiff.jacobian(
-                (u) -> rk4(p, x_reff, u, time, 0.5, nominal_attitude_dynamics),
+                (u) -> rk4(p, x_reff, u, time, dt, nominal_attitude_dynamics),
                 u_reff))
     end
     return A, B

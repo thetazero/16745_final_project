@@ -41,14 +41,25 @@ function rk4(p::attitude_params, x, u, t, dt, derivative)
 end
 
 
+# """
+# Returns the dynamics at a certain position, time
+# """
+# function nominal_attitude_dynamics(p::attitude_params, x, control, time::Epoch)
+#     ω, q = x[1:3], x[4:7]
+#     ᵇQⁿ = quaternionToMatrix(q)'
+#     ᵇmagnetic = ᵇQⁿ * SatellitePlayground.IGRF13(p.position, time)
+#     u = cross(control, ᵇmagnetic)
+#     return [
+#         p.J \ (u - cross(ω, p.J * ω))
+#         SP.qdot(q, ω)
+#     ]
+# end
+
 """
-Returns the dynamics at a certain position, time
+Reaction wheel dynamics
 """
-function nominal_attitude_dynamics(p::attitude_params, x, control, time::Epoch)
+function nominal_attitude_dynamics(p::attitude_params, x, u, time::Epoch)
     ω, q = x[1:3], x[4:7]
-    ᵇQⁿ = quaternionToMatrix(q)'
-    ᵇmagnetic = ᵇQⁿ * SatellitePlayground.IGRF13(p.position, time)
-    u = cross(control, ᵇmagnetic)
     return [
         p.J \ (u - cross(ω, p.J * ω))
         SP.qdot(q, ω)
