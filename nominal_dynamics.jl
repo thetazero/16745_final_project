@@ -37,31 +37,33 @@ function rk4(p::attitude_params, x, u, t, dt, derivative)
 
     x⁺ = x + (1 / 6) * (k₁ + 2 * k₂ + 2 * k₃ + k₄)
 
+    x⁺[4:7] /= norm(x⁺[4:7])
+
     return x⁺
 end
 
 
-# """
-# Returns the dynamics at a certain position, time
-# """
-# function nominal_attitude_dynamics(p::attitude_params, x, control, time::Epoch)
-#     ω, q = x[1:3], x[4:7]
-#     ᵇQⁿ = quaternionToMatrix(q)'
-#     ᵇmagnetic = ᵇQⁿ * SatellitePlayground.IGRF13(p.position, time)
-#     u = cross(control, ᵇmagnetic)
-#     return [
-#         p.J \ (u - cross(ω, p.J * ω))
-#         SP.qdot(q, ω)
-#     ]
-# end
-
 """
-Reaction wheel dynamics
+Returns the dynamics at a certain position, time
 """
-function nominal_attitude_dynamics(p::attitude_params, x, u, time::Epoch)
+function nominal_attitude_dynamics(p::attitude_params, x, control, time::Epoch)
     ω, q = x[1:3], x[4:7]
+    ᵇQⁿ = quaternionToMatrix(q)'
+    ᵇmagnetic = ᵇQⁿ * SatellitePlayground.IGRF13(p.position, time)
+    u = cross(control, ᵇmagnetic)
     return [
         p.J \ (u - cross(ω, p.J * ω))
         SP.qdot(q, ω)
     ]
 end
+
+# """
+# Reaction wheel dynamics
+# """
+# function nominal_attitude_dynamics(p::attitude_params, x, u, time::Epoch)
+#     ω, q = x[1:3], x[4:7]
+#     return [
+#         p.J \ (u - cross(ω, p.J * ω))
+#         SP.qdot(q, ω)
+#     ]
+# end
