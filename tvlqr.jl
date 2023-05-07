@@ -38,23 +38,24 @@ function controller(x, K)
   return u
 end
 
-function make_tvlqr_controller(x0::SP.RBState, p, duration)
+function make_tvlqr_controller(x0::SP.RBState, J, duration, dt)
   # reference trajectory
-  dt = 0.05
   steps = duration / dt
   @time (ref_traj, times) = rollout(x0, steps, dt)
   @time As, Bs = generate_jacobians(ref_traj, times, J, dt)
 
   _, K = tvlqr(ref_traj, As, Bs)
 
-  i = 0
-
-  function tvlqr_control(measurement)
-    global i
-    i += 1
-    (state, _) = measurement
-    x = Vector([state.angular_velocity; state.attitude])
-    u = controller(x, K[i])
-    return Control(u)
+  function control_generator()
+    i = 0
+    function tvlqr_control(measurement)
+      i += 1
+      (state, _) = measurement
+      x = Vector([state.angular_velocity; state.attitude])
+      u = controller(x, K[i])
+      return Control(u)
+    end
   end
+
+  return control_generator, steps
 end

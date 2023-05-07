@@ -8,6 +8,7 @@ include("nominal_dynamics.jl")
 include("rollout.jl")
 include("PlanningWithAttitude.jl")
 include("tvlqr.jl")
+include("trial.jl")
 PWA = PlanningWithAttitude
 
 
@@ -20,17 +21,10 @@ x0 = SP.RBState(
     [1, 0, 0, 0],
     zeros(3)
 )
+duration = 60 * 60 # 1 hour
+dt = 0.05
 
-tvlqr_control = make_tvlqr_controller(x0, J, 60 * 60)
-
-function log_state(hist, state)
-    push!(hist, state)
-end
-
-function terminate_on_fast_spin(state, parameters, time, i)
-    ϕ = PWA.qtorp(PWA.L(x0.attitude)' * state.attitude)
-    return norm(state.angular_velocity) > 5 || norm(ϕ) < 0.02
-end
+tvlqr_control_gen, N = make_tvlqr_controller(x0, J, duration, dt)
 
 begin
     q_true = [0.99, 0.0, 0.1, 0.0]
@@ -43,17 +37,9 @@ begin
     )
 end
 
-begin
-    dt = 0.05
-    N = 60 * 60 / dt
-    (hist, time) = SP.simulate(tvlqr_control, log_step=log_state, max_iterations=N - 1, dt=dt,
-        initial_condition=x_true, terminal_condition=terminate_on_fast_spin)
-    w_hist = [norm(state.angular_velocity) for state in hist]
-    q_hist = [state.attitude for state in hist]
-    q_hist = SP.vec_to_mat(q_hist)
-end
+tvlqr_control = tvlqr_control_gen()
+(hist, time) = test_controller(x_true, tvlqr_control, N, dt)
 
+plot_attitude(hist, time)
 
-plot(time, w_hist, label="w")
-
-plot(time, q_hist, label=["q1" "q2" "q3" "q4"])
+plot_angular_velocity(hist, time)
