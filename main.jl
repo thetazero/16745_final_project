@@ -57,7 +57,6 @@ function tvlqr_control(measurement)
     (state, _) = measurement
     x = Vector([state.angular_velocity; state.attitude])
     u = controller(x)
-    @show u
     return Control(u)
 end
 
