@@ -22,9 +22,10 @@ x0 = SP.RBState(
     zeros(3)
 )
 duration = 60 * 60 # 1 hour
-dt = 0.05
+sim_dt = 0.05
+plan_dt = 0.25
 
-tvlqr_control_gen, N = make_tvlqr_controller(x0, J, duration, dt)
+tvlqr_control, sim_steps = make_tvlqr_controller(x0, J, duration, sim_dt, plan_dt)
 
 begin
     q_true = [0.99, 0.0, 0.1, 0.0]
@@ -37,9 +38,8 @@ begin
     )
 end
 
-tvlqr_control = tvlqr_control_gen()
-(hist, time) = test_controller(x_true, tvlqr_control, N, dt)
+(hist, time) = test_controller(x_true, tvlqr_control, sim_steps, sim_dt)
 
 plot_attitude(hist, time)
 
-plot_angular_velocity(hist, time)
+# plot_angular_velocity(hist, time)

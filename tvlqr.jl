@@ -38,24 +38,25 @@ function controller(x, K)
   return u
 end
 
-function make_tvlqr_controller(x0::SP.RBState, J, duration, dt)
+function make_tvlqr_controller(x0::SP.RBState, J, duration, sim_dt, plan_dt)
   # reference trajectory
-  steps = duration / dt
-  @time (ref_traj, times) = rollout(x0, steps, dt)
-  @time As, Bs = generate_jacobians(ref_traj, times, J, dt)
+  plan_steps = duration / plan_dt
+  @time (ref_traj, times) = rollout(x0, duration / plan_dt, plan_dt)
+  @time As, Bs = generate_jacobians(ref_traj, times, J, plan_dt)
 
   _, K = tvlqr(ref_traj, As, Bs)
+  start_time = Epoch(2020, 11, 30)
 
-  function control_generator()
-    i = 0
-    function tvlqr_control(measurement)
-      i += 1
-      (state, _) = measurement
-      x = Vector([state.angular_velocity; state.attitude])
-      u = controller(x, K[i])
-      return Control(u)
-    end
+  function tvlqr_control(measurement)
+    (angular_velocity, attitude, time) = measurement
+    i = 1 + ((time - start_time) / plan_dt)
+    i = clamp(i, 1, plan_steps)
+    i = Int(floor(i))
+    x = Vector([angular_velocity; attitude])
+    u = controller(x, K[i])
+    return Control(u)
   end
 
-  return control_generator, steps
+  sim_steps = duration / sim_dt
+  return tvlqr_control, sim_steps
 end
