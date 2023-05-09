@@ -4,14 +4,16 @@ end
 
 function terminate_gen(q_goal)
   function terminate(state, parameters, time, i)
-    return norm(state.angular_velocity) > 10 || SP.qErr(state.attitude, q_goal) < deg2rad(1)
+    q_err = SP.qErr(state.attitude, q_goal)
+    return norm(state.angular_velocity) > 10 || q_err < deg2rad(1) || q_err > deg2rad(50)
   end
 end
 
-function test_controller(q_goal, x_true, controller, N, dt)
+function test_controller(q_goal, x_true, controller, N, dt; log_step=SP.default_log_step)
   terminate = terminate_gen(q_goal)
-  return SP.simulate(controller, log_step=log_state, max_iterations=N - 1, dt=dt,
-    initial_condition=x_true, terminal_condition=terminate, measure=sim_measure)
+  return SP.simulate(controller, max_iterations=N - 1, dt=dt,
+    initial_condition=x_true, terminal_condition=terminate, measure=sim_measure,
+    silent=true, log_step=log_step)
 end
 
 function plot_attitude(hist, time)
@@ -20,8 +22,8 @@ function plot_attitude(hist, time)
   plot(time, q_hist, label=["q1" "q2" "q3" "q4"])
 end
 
-@inline function sim_measure(state, parameters, time)
-  return (state.angular_velocity, state.attitude, time)
+@inline function sim_measure(state, env)
+  return (state.angular_velocity, state.attitude, env.time)
 end
 
 function plot_angular_velocity(hist, time)
@@ -29,7 +31,7 @@ function plot_angular_velocity(hist, time)
   plot(time, w_hist, label="w", xlabel="time (m)", ylabel="angular velocity (degrees/s)")
 end
 
-function attitude_error(q1, q2) 
+function attitude_error(q1, q2)
   return rad2deg(SP.qErr(q1, q2))
 end
 

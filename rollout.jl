@@ -10,7 +10,7 @@ function rollout(state, steps, dt)
         return zero(SatellitePlayground.Control)
     end
     return SatellitePlayground.simulate(no_control, log_step=log_step, max_iterations=steps, dt=dt,
-        initial_condition=state)
+        initial_condition=state, silent=true)
 end
 
 function generate_jacobians(states, times, J, dt)

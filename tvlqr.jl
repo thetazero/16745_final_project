@@ -13,7 +13,7 @@ function tvlqr(ref_traj, As, Bs)
   K = [zeros(nu, nx) for i = 1:N-1]
   P = [zeros(nx, nx) for i = 1:N]
   P[N] = Qf
-  @progress "LQR" for k = N-1:-1:1
+  for k = N-1:-1:1
     qk = ref_traj[k].attitude
     Gk = PWA.G(qk)
 
@@ -42,8 +42,8 @@ end
 function make_tvlqr_controller(x0::SP.RBState, J, duration, sim_dt, plan_dt)
   # reference trajectory
   plan_steps = duration / plan_dt
-  @time (ref_traj, times) = rollout(x0, duration / plan_dt, plan_dt)
-  @time As, Bs = generate_jacobians(ref_traj, times, J, plan_dt)
+  (ref_traj, times) = rollout(x0, duration / plan_dt, plan_dt)
+  As, Bs = generate_jacobians(ref_traj, times, J, plan_dt)
 
   _, K = tvlqr(ref_traj, As, Bs)
   start_time = Epoch(2020, 11, 30)
