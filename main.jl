@@ -9,6 +9,7 @@ include("rollout.jl")
 include("PlanningWithAttitude.jl")
 include("tvlqr.jl")
 include("trial.jl")
+include("initial_conditions.jl")
 PWA = PlanningWithAttitude
 
 
@@ -16,8 +17,8 @@ PWA = PlanningWithAttitude
 J = SP.default_parameters.J
 x0 = SP.initialize_orbit()
 x0 = SP.RBState(
-    x0.position,
-    x0.velocity,
+    [-0.0, -0.0, -7.0641363e6],
+    [-0.0, -8333.50437927068, -0.0],
     [1, 0, 0, 0],
     zeros(3)
 )
@@ -38,8 +39,10 @@ begin
     )
 end
 
-(hist, time) = test_controller(x_true, tvlqr_control, sim_steps, sim_dt)
+(hist, time) = test_controller(x0.attitude, x_true, tvlqr_control, sim_steps, sim_dt)
 
-plot_attitude(hist, time)
+plot_err(hist, x0.attitude, time)
+
+# plot_attitude(hist, time)
 
 # plot_angular_velocity(hist, time)

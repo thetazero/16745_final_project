@@ -2,14 +2,16 @@ function log_state(hist, state)
   push!(hist, state)
 end
 
-function terminate_on_fast_spin(state, parameters, time, i)
-  ϕ = PWA.qtorp(PWA.L(x0.attitude)' * state.attitude)
-  return norm(state.angular_velocity) > 5 || norm(ϕ) < 0.02
+function terminate_gen(q_goal)
+  function terminate(state, parameters, time, i)
+    return norm(state.angular_velocity) > 10 || SP.qErr(state.attitude, q_goal) < deg2rad(1)
+  end
 end
 
-function test_controller(x_true, controller, N, dt)
+function test_controller(q_goal, x_true, controller, N, dt)
+  terminate = terminate_gen(q_goal)
   return SP.simulate(controller, log_step=log_state, max_iterations=N - 1, dt=dt,
-    initial_condition=x_true, terminal_condition=terminate_on_fast_spin, measure=sim_measure)
+    initial_condition=x_true, terminal_condition=terminate, measure=sim_measure)
 end
 
 function plot_attitude(hist, time)
@@ -23,7 +25,15 @@ end
 end
 
 function plot_angular_velocity(hist, time)
-  w_hist = [norm(state.angular_velocity) for state in hist]
-  plot(time, w_hist, label="w")
+  w_hist = [rad2deg(norm(state.angular_velocity)) for state in hist]
+  plot(time, w_hist, label="w", xlabel="time (m)", ylabel="angular velocity (degrees/s)")
 end
 
+function attitude_error(q1, q2) 
+  return rad2deg(SP.qErr(q1, q2))
+end
+
+function plot_err(hist, ref, time)
+  err_hist = [attitude_error(ref, state.attitude) for state in hist]
+  plot(time, err_hist, label="attitude error", xlabel="time (m)", ylabel="error (degrees)")
+end

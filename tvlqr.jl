@@ -27,15 +27,16 @@ function tvlqr(ref_traj, As, Bs)
   return P, K
 end
 
-function controller(x, K)
-  q0 = x0.attitude
-  q = x[4:7]
-  ω = x[1:3]
-  ϕ = PWA.qtorp(PWA.L(q0)' * q)
+function controller_gen(q0, ω0)
+  function controller(x, K)
+    q = x[4:7]
+    ω = x[1:3]
+    ϕ = PWA.qtorp(PWA.L(q0)' * q)
 
-  Δx̃ = [ω - x0.angular_velocity; ϕ]
-  u = -K * Δx̃
-  return u
+    Δx̃ = [ω - ω0; ϕ]
+    u = -K * Δx̃
+    return u
+  end
 end
 
 function make_tvlqr_controller(x0::SP.RBState, J, duration, sim_dt, plan_dt)
@@ -46,6 +47,8 @@ function make_tvlqr_controller(x0::SP.RBState, J, duration, sim_dt, plan_dt)
 
   _, K = tvlqr(ref_traj, As, Bs)
   start_time = Epoch(2020, 11, 30)
+
+  controller = controller_gen(x0.attitude, x0.angular_velocity)
 
   function tvlqr_control(measurement)
     (angular_velocity, attitude, time) = measurement
