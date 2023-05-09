@@ -19,7 +19,7 @@ end
 function plot_attitude(hist, time)
   q_hist = [state.attitude for state in hist]
   q_hist = SP.vec_to_mat(q_hist)
-  plot(time, q_hist, label=["q1" "q2" "q3" "q4"])
+  plot(time, q_hist, label=["q1" "q2" "q3" "q4"], xlabel="time (m)", ylabel="quaternion components", linewidth=2)
 end
 
 @inline function sim_measure(state, env)
@@ -28,7 +28,7 @@ end
 
 function plot_angular_velocity(hist, time)
   w_hist = [rad2deg(norm(state.angular_velocity)) for state in hist]
-  plot(time, w_hist, label="w", xlabel="time (m)", ylabel="angular velocity (degrees/s)")
+  plot(time, w_hist, label="w", xlabel="time (m)", ylabel="angular velocity (degrees/s)", linewidth=2)
 end
 
 function attitude_error(q1, q2)
@@ -37,5 +37,5 @@ end
 
 function plot_err(hist, ref, time)
   err_hist = [attitude_error(ref, state.attitude) for state in hist]
-  plot(time, err_hist, label="attitude error", xlabel="time (m)", ylabel="error (degrees)")
+  plot(time, err_hist, label="attitude error", xlabel="time (m)", ylabel="error (degrees)", linewidth=2)
 end

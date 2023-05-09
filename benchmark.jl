@@ -12,7 +12,6 @@ include("trial.jl")
 include("initial_conditions.jl")
 PWA = PlanningWithAttitude
 
-Random.seed!(1234)
 function benchmark(orbits, states, q_err_min, q_err_max, angular_rate, plot::Bool)
   success_rate = 0
   for _ in 1:orbits

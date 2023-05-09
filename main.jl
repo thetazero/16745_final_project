@@ -1,7 +1,6 @@
 using SatellitePlayground
 using Plots
 using LinearAlgebra
-using ProgressLogging
 SP = SatellitePlayground
 
 include("nominal_dynamics.jl")
@@ -43,6 +42,6 @@ end
 
 plot_err(hist, x0.attitude, time)
 
-# plot_attitude(hist, time)
+plot_attitude(hist, time)
 
-# plot_angular_velocity(hist, time)
+plot_angular_velocity(hist, time)
